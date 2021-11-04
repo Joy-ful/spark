@@ -1,5 +1,7 @@
 # spark
+
 spark_test
+
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
@@ -12,20 +14,19 @@ import scala.collection.mutable.ArrayBuffer
 
 object logAnalysis_catalina {
   Logger.getLogger("org").setLevel(Level.ERROR)
-
-
   def main(args: Array[String]): Unit = {
     val root = this.getClass.getResource("/")
     val conf = new SparkConf().setAppName("logAnalysis").setMaster("local[*]")
     val sc = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
     val sourceRdd = sc.textFile(root + "catalina/catalina*.log")
-    var log = new ArrayBuffer[String]()//用于临时保存要合并的行
-
+    //用于临时保存要合并的行
+    var log = new ArrayBuffer[String]()
     val preprocessRDD = sourceRdd
       .map(line => {
         var tlog = " "
-        if (log.length < 2) {//合并两行
+        //合并两行
+        if (log.length < 2) {
           log += line
           if (log.length == 2) {
             if (log(0).contains(": ")) tlog = log(1) + " " + log(0)
@@ -33,7 +34,8 @@ object logAnalysis_catalina {
             log = new ArrayBuffer[String]()
           }
         }
-        tlog//合并后的行
+        //合并后的行
+        tlog
       })
       .filter(!_.equals(" "))
     import sqlContext.implicits._
